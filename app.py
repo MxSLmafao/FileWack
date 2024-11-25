@@ -1,18 +1,24 @@
 import os
+import logging
 from flask import Flask, render_template, request, send_file, jsonify, abort
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
 from werkzeug.utils import secure_filename
 import mimetypes
 import utils
+from database import db
 
-class Base(DeclarativeBase):
-    pass
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-db = SQLAlchemy(model_class=Base)
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a secret key"
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+# Ensure DATABASE_URL starts with postgresql://
+database_url = os.environ.get("DATABASE_URL")
+if not database_url:
+    raise ValueError("DATABASE_URL environment variable is not set")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
@@ -20,14 +26,29 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
+try:
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'], mode=0o755)
+    logger.info(f"Upload folder {app.config['UPLOAD_FOLDER']} is ready")
+except Exception as e:
+    logger.error(f"Error creating upload folder: {str(e)}")
+    raise
 
 db.init_app(app)
 
-with app.app_context():
-    import models
-    db.create_all()
+import models
+
+def init_db():
+    try:
+        with app.app_context():
+            db.create_all()
+            logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.error(f"Error initializing database: {str(e)}")
+        raise
+
+init_db()
+File = models.File
 
 @app.route('/')
 def index():
@@ -50,10 +71,9 @@ def upload_file():
         
         mime_type = mimetypes.guess_type(filename)[0]
         
-        new_file = models.File(
-            filename=filename,
-            mime_type=mime_type
-        )
+        new_file = File()
+        new_file.filename = filename
+        new_file.mime_type = mime_type
         
         db.session.add(new_file)
         db.session.commit()
@@ -63,8 +83,9 @@ def upload_file():
             'filename': filename
         })
     except Exception as e:
+        logger.error(f"Error during file upload: {str(e)}")
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An error occurred while uploading the file'}), 500
 
 @app.route('/files/<filename>')
 def view_file(filename):
