@@ -6,8 +6,20 @@
     <title>{% block title %}File Hosting Platform{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <style>
+        #gradient-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
+    <canvas id="gradient-canvas"></canvas>
     <nav class="navbar navbar-expand-lg bg-dark mb-4">
         <div class="container">
             <a class="navbar-brand" href="/">File Host</a>
@@ -24,6 +36,7 @@
         </div>
     </footer>
 
+    <script src="{{ url_for('static', filename='js/gradient.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
