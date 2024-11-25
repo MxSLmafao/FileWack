@@ -80,4 +80,11 @@ def view_file(filename):
 @app.route('/raw/<filename>')
 def raw_file(filename):
     file_record = models.File.query.filter_by(stored_name=filename).first_or_404()
-    return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    return send_file(
+        os.path.join(app.config['UPLOAD_FOLDER'], filename),
+        mimetype=file_record.mime_type,
+        as_attachment=True,
+        download_name=file_record.original_name,
+        add_etags=False,
+        max_age=0
+    )
