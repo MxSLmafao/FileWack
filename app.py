@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.utils import secure_filename
 import mimetypes
-import uuid
+import utils
 
 class Base(DeclarativeBase):
     pass
@@ -44,8 +44,7 @@ def upload_file():
             return jsonify({'error': 'No selected file'}), 400
 
         original_name = secure_filename(file.filename if file.filename is not None else '')
-        file_uuid = str(uuid.uuid4())[:8]
-        filename = f"{file_uuid}_{original_name}"
+        filename = utils.get_unique_filename(original_name, app.config['UPLOAD_FOLDER'])
         
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         
