@@ -11,12 +11,12 @@
 
                 {% if file.is_media %}
                     {% if file.mime_type.startswith('image/') %}
-                    <img src="{{ url_for('raw_file', filename=file.stored_name) }}" 
+                    <img src="{{ url_for('raw_file', filename=file.original_name) }}" 
                          alt="{{ file.original_name }}" 
                          class="file-preview mb-4">
                     {% elif file.mime_type.startswith('video/') %}
                     <video controls class="file-preview mb-4">
-                        <source src="{{ url_for('raw_file', filename=file.stored_name) }}" 
+                        <source src="{{ url_for('raw_file', filename=file.original_name) }}" 
                                 type="{{ file.mime_type }}">
                         Your browser does not support the video tag.
                     </video>
@@ -33,7 +33,7 @@
                             <small class="text-muted">Uploaded on {{ file.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}</small>
                         </p>
                     </div>
-                    <a href="{{ url_for('view_file', filename=file.stored_name, download=True) }}" 
+                    <a href="{{ url_for('view_file', filename=file.original_name, download=True) }}" 
                        class="btn btn-primary">
                         Download File
                     </a>
@@ -47,12 +47,12 @@
 {% block head %}
     <meta property="og:title" content="{{ file.original_name }}">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url_for('view_file', filename=file.stored_name, _external=True) }}">
+    <meta property="og:url" content="{{ url_for('view_file', filename=file.original_name, _external=True) }}">
     {% if file.is_media %}
         {% if file.mime_type.startswith('image/') %}
-        <meta property="og:image" content="{{ url_for('raw_file', filename=file.stored_name, _external=True) }}">
+        <meta property="og:image" content="{{ url_for('raw_file', filename=file.original_name, _external=True) }}">
         {% elif file.mime_type.startswith('video/') %}
-        <meta property="og:video" content="{{ url_for('raw_file', filename=file.stored_name, _external=True) }}">
+        <meta property="og:video" content="{{ url_for('raw_file', filename=file.original_name, _external=True) }}">
         <meta property="og:video:type" content="{{ file.mime_type }}">
         {% endif %}
     {% endif %}

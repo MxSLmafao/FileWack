@@ -39,10 +39,10 @@ def upload_file():
         return jsonify({'error': 'No file part'}), 400
     
     file = request.files['file']
-    if file.filename == '':
+    if not file or file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
-    filename = secure_filename(file.filename)
+    filename = secure_filename(file.filename if file.filename is not None else '')
     file_uuid = str(uuid.uuid4())
     file_extension = os.path.splitext(filename)[1]
     stored_filename = f"{file_uuid}{file_extension}"
@@ -51,26 +51,26 @@ def upload_file():
     
     mime_type = mimetypes.guess_type(filename)[0]
     
-    new_file = models.File(
-        original_name=filename,
-        stored_name=stored_filename,
-        mime_type=mime_type
-    )
+    new_file = models.File()
+    new_file.original_name = filename
+    new_file.stored_name = stored_filename
+    new_file.mime_type = mime_type
+    
     db.session.add(new_file)
     db.session.commit()
     
     return jsonify({
-        'url': f"/files/{stored_filename}",
+        'url': f"/files/{filename}",
         'filename': filename
     })
 
 @app.route('/files/<filename>')
 def view_file(filename):
-    file_record = models.File.query.filter_by(stored_name=filename).first_or_404()
+    file_record = models.File.query.filter_by(original_name=filename).first_or_404()
     
     if request.args.get('download'):
         return send_file(
-            os.path.join(app.config['UPLOAD_FOLDER'], filename),
+            os.path.join(app.config['UPLOAD_FOLDER'], file_record.stored_name),
             as_attachment=True,
             download_name=file_record.original_name
         )
@@ -79,12 +79,10 @@ def view_file(filename):
 
 @app.route('/raw/<filename>')
 def raw_file(filename):
-    file_record = models.File.query.filter_by(stored_name=filename).first_or_404()
+    file_record = models.File.query.filter_by(original_name=filename).first_or_404()
     return send_file(
-        os.path.join(app.config['UPLOAD_FOLDER'], filename),
+        os.path.join(app.config['UPLOAD_FOLDER'], file_record.stored_name),
         mimetype=file_record.mime_type,
         as_attachment=True,
-        download_name=file_record.original_name,
-        add_etags=False,
-        max_age=0
+        download_name=file_record.original_name
     )
