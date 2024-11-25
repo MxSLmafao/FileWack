@@ -35,32 +35,37 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-    
-    file = request.files['file']
-    if not file or file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'}), 400
+        
+        file = request.files['file']
+        if not file or file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
 
-    original_name = secure_filename(file.filename if file.filename is not None else '')
-    file_uuid = str(uuid.uuid4())[:8]
-    filename = f"{file_uuid}_{original_name}"
-    
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    
-    mime_type = mimetypes.guess_type(filename)[0]
-    
-    new_file = models.File()
-    new_file.filename = filename
-    new_file.mime_type = mime_type
-    
-    db.session.add(new_file)
-    db.session.commit()
-    
-    return jsonify({
-        'url': f"/files/{filename}",
-        'filename': filename
-    })
+        original_name = secure_filename(file.filename if file.filename is not None else '')
+        file_uuid = str(uuid.uuid4())[:8]
+        filename = f"{file_uuid}_{original_name}"
+        
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        
+        mime_type = mimetypes.guess_type(filename)[0]
+        
+        new_file = models.File(
+            filename=filename,
+            mime_type=mime_type
+        )
+        
+        db.session.add(new_file)
+        db.session.commit()
+        
+        return jsonify({
+            'url': f"/files/{filename}",
+            'filename': filename
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/files/<filename>')
 def view_file(filename):

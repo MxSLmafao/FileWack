@@ -2,7 +2,7 @@ from app import db
 from datetime import datetime
 
 class File(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     filename = db.Column(db.String(255), nullable=False, unique=True)
     mime_type = db.Column(db.String(127))
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
