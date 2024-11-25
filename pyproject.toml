@@ -11,4 +11,6 @@ dependencies = [
     "flask-migrate>=4.0.7",
     "python-dotenv",
     "werkzeug",
+    "sqlalchemy>=2.0.36",
+    "alembic>=1.14.0",
 ]
