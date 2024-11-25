@@ -16,4 +16,13 @@
     max-width: 100%;
     max-height: 500px;
     object-fit: contain;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Audio player styling */
+audio.file-preview {
+    width: 100%;
+    max-width: 500px;
+    margin: 2rem auto;
 }

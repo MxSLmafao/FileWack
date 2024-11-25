@@ -11,5 +11,6 @@ class File(db.Model):
     def is_media(self):
         return self.mime_type and (
             self.mime_type.startswith('image/') or 
-            self.mime_type.startswith('video/')
+            self.mime_type.startswith('video/') or
+            self.mime_type.startswith('audio/')
         )

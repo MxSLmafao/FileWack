@@ -9,23 +9,31 @@
             <div class="card-body">
                 <h2 class="card-title mb-4">{{ file.filename }}</h2>
 
-                {% if file.is_media %}
-                    {% if file.mime_type.startswith('image/') %}
-                    <img src="{{ url_for('raw_file', filename=file.filename) }}" 
-                         alt="{{ file.filename }}" 
-                         class="file-preview mb-4">
-                    {% elif file.mime_type.startswith('video/') %}
-                    <video controls class="file-preview mb-4">
-                        <source src="{{ url_for('raw_file', filename=file.filename) }}" 
-                                type="{{ file.mime_type }}">
-                        Your browser does not support the video tag.
-                    </video>
+                <div class="text-center">
+                    {% if file.is_media %}
+                        {% if file.mime_type.startswith('image/') %}
+                        <img src="{{ url_for('raw_file', filename=file.filename) }}" 
+                             alt="{{ file.filename }}" 
+                             class="file-preview mb-4">
+                        {% elif file.mime_type.startswith('video/') %}
+                        <video controls class="file-preview mb-4">
+                            <source src="{{ url_for('raw_file', filename=file.filename) }}" 
+                                    type="{{ file.mime_type }}">
+                            Your browser does not support the video tag.
+                        </video>
+                        {% elif file.mime_type.startswith('audio/') %}
+                        <audio controls class="file-preview mb-4">
+                            <source src="{{ url_for('raw_file', filename=file.filename) }}"
+                                    type="{{ file.mime_type }}">
+                            Your browser does not support the audio tag.
+                        </audio>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            This file type cannot be previewed directly.
+                        </div>
                     {% endif %}
-                {% else %}
-                    <div class="alert alert-info">
-                        This file type cannot be previewed directly.
-                    </div>
-                {% endif %}
+                </div>
 
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
