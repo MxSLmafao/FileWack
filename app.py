@@ -42,18 +42,16 @@ def upload_file():
     if not file or file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
-    filename = secure_filename(file.filename if file.filename is not None else '')
-    file_uuid = str(uuid.uuid4())
-    file_extension = os.path.splitext(filename)[1]
-    stored_filename = f"{file_uuid}{file_extension}"
+    original_name = secure_filename(file.filename if file.filename is not None else '')
+    file_uuid = str(uuid.uuid4())[:8]
+    filename = f"{file_uuid}_{original_name}"
     
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], stored_filename))
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     
     mime_type = mimetypes.guess_type(filename)[0]
     
     new_file = models.File()
-    new_file.original_name = filename
-    new_file.stored_name = stored_filename
+    new_file.filename = filename
     new_file.mime_type = mime_type
     
     db.session.add(new_file)
@@ -66,23 +64,23 @@ def upload_file():
 
 @app.route('/files/<filename>')
 def view_file(filename):
-    file_record = models.File.query.filter_by(original_name=filename).first_or_404()
+    file_record = models.File.query.filter_by(filename=filename).first_or_404()
     
     if request.args.get('download'):
         return send_file(
-            os.path.join(app.config['UPLOAD_FOLDER'], file_record.stored_name),
+            os.path.join(app.config['UPLOAD_FOLDER'], file_record.filename),
             as_attachment=True,
-            download_name=file_record.original_name
+            download_name=file_record.filename
         )
     
     return render_template('view.html', file=file_record)
 
 @app.route('/raw/<filename>')
 def raw_file(filename):
-    file_record = models.File.query.filter_by(original_name=filename).first_or_404()
+    file_record = models.File.query.filter_by(filename=filename).first_or_404()
     return send_file(
-        os.path.join(app.config['UPLOAD_FOLDER'], file_record.stored_name),
+        os.path.join(app.config['UPLOAD_FOLDER'], file_record.filename),
         mimetype=file_record.mime_type,
         as_attachment=True,
-        download_name=file_record.original_name
+        download_name=file_record.filename
     )

@@ -1,22 +1,22 @@
 {% extends "base.html" %}
 
-{% block title %}{{ file.original_name }} - File Hosting Platform{% endblock %}
+{% block title %}{{ file.filename }} - File Hosting Platform{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-10">
         <div class="card">
             <div class="card-body">
-                <h2 class="card-title mb-4">{{ file.original_name }}</h2>
+                <h2 class="card-title mb-4">{{ file.filename }}</h2>
 
                 {% if file.is_media %}
                     {% if file.mime_type.startswith('image/') %}
-                    <img src="{{ url_for('raw_file', filename=file.original_name) }}" 
-                         alt="{{ file.original_name }}" 
+                    <img src="{{ url_for('raw_file', filename=file.filename) }}" 
+                         alt="{{ file.filename }}" 
                          class="file-preview mb-4">
                     {% elif file.mime_type.startswith('video/') %}
                     <video controls class="file-preview mb-4">
-                        <source src="{{ url_for('raw_file', filename=file.original_name) }}" 
+                        <source src="{{ url_for('raw_file', filename=file.filename) }}" 
                                 type="{{ file.mime_type }}">
                         Your browser does not support the video tag.
                     </video>
@@ -33,7 +33,7 @@
                             <small class="text-muted">Uploaded on {{ file.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}</small>
                         </p>
                     </div>
-                    <a href="{{ url_for('view_file', filename=file.original_name, download=True) }}" 
+                    <a href="{{ url_for('view_file', filename=file.filename, download=True) }}" 
                        class="btn btn-primary">
                         Download File
                     </a>
@@ -45,14 +45,14 @@
 
 <!-- OpenGraph Meta Tags for Social Media Embeds -->
 {% block head %}
-    <meta property="og:title" content="{{ file.original_name }}">
+    <meta property="og:title" content="{{ file.filename }}">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url_for('view_file', filename=file.original_name, _external=True) }}">
+    <meta property="og:url" content="{{ url_for('view_file', filename=file.filename, _external=True) }}">
     {% if file.is_media %}
         {% if file.mime_type.startswith('image/') %}
-        <meta property="og:image" content="{{ url_for('raw_file', filename=file.original_name, _external=True) }}">
+        <meta property="og:image" content="{{ url_for('raw_file', filename=file.filename, _external=True) }}">
         {% elif file.mime_type.startswith('video/') %}
-        <meta property="og:video" content="{{ url_for('raw_file', filename=file.original_name, _external=True) }}">
+        <meta property="og:video" content="{{ url_for('raw_file', filename=file.filename, _external=True) }}">
         <meta property="og:video:type" content="{{ file.mime_type }}">
         {% endif %}
     {% endif %}
